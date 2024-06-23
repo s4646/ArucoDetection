@@ -1,198 +1,125 @@
-import threading
-from typing import List
 import cv2
-import argparse
-import sys
-from math import atan2, cos, sin, sqrt, pi
+import math
 import numpy as np
-import safethread
-import imutils
-import time
 
 class ArucoDetection:
 
-    def __init__(self, aruco_dict):
-        
-        self.img = None
-        self.ARUCO_DICT = aruco_dict
-        self.corners = []
+    def __init__(self):
+        self.image = None
         self.ids = []
+        self.angles = []
         self.contours = []
 
-        self.id_2_area = {
-            "0": 100000,
-            "1": 100000,
-            "2": 100000, 
-            "3": 100000, 
-            "4": 100000,
-            "5": 100000,
-            "6": 100000,
-            "7": 100000,
-            "8": 100000, 
-            "9": 100000, 
+        self.id_center_dict = {
+            0: [],
+            1: [],
+            2: [], 
+            3: [], 
+            4: [],
+            5: [],
+            6: [],
+            7: [],
+            8: [], 
+            9: [], 
         }
 
-        self.id_2_centerPoint = {
-            "0": [],
-            "1": [],
-            "2": [], 
-            "3": [], 
-            "4": [],
-            "5": [],
-            "6": [],
-            "7": [],
-            "8": [], 
-            "9": [], 
+        self.id_distance_dict = {
+            0: [],
+            1: [],
+            2: [], 
+            3: [], 
+            4: [],
+            5: [],
+            6: [],
+            7: [],
+            8: [], 
+            9: [], 
         }
 
-        self.ticker = threading.Event()
-        # processing frequency (to spare CPU time)
-        self.cycle_counter = 1
-        self.cycle_activation = 10
-
-
-        # self.detection = safethread.SafeThread(target=self.detect_aruco).start()
-        # self.orientation = safethread.SafeThread(target=self.getOrientation_detection).start()
-
-
-    def set_image_to_process(self, img):
-        """Image to process
-
-        Args:
-            img (nxmx3): RGB image
+    def set_image_to_process(self, image):
         """
-        self.img = img
-
-    def getOrientation(self, pts):
-        ## [pca]
-        # Construct a buffer used by the pca analysis
-        sz = len(pts)
-        data_pts = np.empty((sz, 2), dtype=np.float64)
-        for i in range(data_pts.shape[0]):
-            data_pts[i,0] = pts[i,0,0]
-            data_pts[i,1] = pts[i,0,1]
-        
-        # Perform PCA analysis
-        mean = np.empty((0))
-        mean, eigenvectors, eigenvalues = cv2.PCACompute2(data_pts, mean)
-        
-        angle = atan2(eigenvectors[0,1], eigenvectors[0,0]) # orientation in radians
-        
-        return -int(np.rad2deg(angle))
-
-    def getOrientation_detection(self):
+        Sets image to process
         """
-            This method finds the contours in the image
+        self.image = image
+
+    def getOrientation(self, id):
         """
-        # time base
-        self.ticker.wait(0.005)
-
-        if self.img is not None:
-            image = self.img.copy()
-        
-            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    
-            # Convert image to binary
-            _, bw = cv2.threshold(gray, 50, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-            
-            # Find all the contours in the thresholded image
-            contours, _ = cv2.findContours(bw, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-
-            self.contours = contours
-        
-        self.cycle_counter += 1
+        Compute angle of aruco with given ID
+        """
+        img_center = self.image.shape[1]//2, self.image.shape[0]//2 # (x, y)
+        center = self.id_center_dict[id[0]]
+        return math.degrees(math.atan2(-center[1]+img_center[1], center[0]-img_center[0])) # -y instead of y
     
     def detect_aruco(self):
         """
             This method detect ArUco code from all types.
             It detect its Value, Boundaries, Center point and type.
-            it return an image with the draws.
         """
-        # time base
-        self.ticker.wait(0.005)
 
-        if self.img is not None:
-            img = self.img.copy()
+        if self.image is not None:
 
-            image = imutils.resize(img, width=720)
-            # load the ArUCo dictionary, grab the ArUCo parameters, and detect
-            # the markers
-            center = (720/2, 540/2)
-            # print(center)
-
-            corners_list = []
-            ids_list = []
-            self.id_2_centerPoint = {
-                "0": [],
-                "1": [],
-                "2": [], 
-                "3": [], 
-                "4": [],
-                "5": [],
-                "6": [],
-                "7": [],
-                "8": [], 
-                "9": [], 
+            self.contours = []
+            self.corners = []
+            self.ids = []
+            self.id_center_dict = {
+                0: [],
+                1: [],
+                2: [], 
+                3: [], 
+                4: [],
+                5: [],
+                6: [],
+                7: [],
+                8: [], 
+                9: [], 
             }
 
-            # for dict in self.ARUCO_DICT:
-            # arucoDict = cv2.aruco.Dictionary_get(self.ARUCO_DICT[self.args.type])
-            # arucoDict = cv2.aruco.Dictionary_get(self.ARUCO_DICT["DICT_4X4_100"])
             arucoParams = cv2.aruco.DetectorParameters()
-            arucoDict = cv2.aruco.ArucoDetector(cv2.aruco.getPredefinedDictionary(self.ARUCO_DICT["DICT_4X4_100"]), arucoParams)
-            (corners, ids, rejected) = arucoDict.detectMarkers(image)
+            arucoDict = cv2.aruco.ArucoDetector(cv2.aruco.getPredefinedDictionary(ARUCO_DICT["DICT_4X4_100"]), arucoParams)
+            contours, ids, _ = arucoDict.detectMarkers(self.image)
             if ids is not None:
-                for c, i in zip(corners, ids):
-                    ids_list.append(i)
-                    corners_list.append(c)
-                    c = c[0]
-                    centerY = int((c[0][1] + c[1][1]) / 2)
-                    centerX = int((c[0][0] + c[1][0]) / 2)
-                    # print(centerX, centerY)
-                    self.id_2_centerPoint[str(i[0])] = (centerX, centerY)
-                    # print("Code: ", i , " Coords: ", c)
-                    
-            self.ids = ids_list
-            self.corners = corners_list
-        
-        self.cycle_counter +=1
+                for c, id in zip(contours, ids):
+                    self.ids.append(id)
+                    self.contours.append(c[0])
 
+                    centroid = self.contours[-1].mean(axis=0)
+                    centerX = int(np.round(centroid[0]))
+                    centerY = int(np.round(centroid[1]))
+                    self.id_center_dict[id[0]] = centerX, centerY
 
-    def draw_detection(self):
-        """
-            This method draw the latest detections on the given image.
-        """
-        # contours = self.contours
-        angles = []
-        areas = []
-        self.id_2_area = {
-            "0": 100000,
-            "1": 100000,
-            "2": 100000, 
-            "3": 100000, 
-            "4": 100000,
-            "5": 100000,
-            "6": 100000,
-            "7": 100000,
-            "8": 100000, 
-            "9": 100000, 
+    def get_detection(self):
+        self.angles = []
+        self.id_distance_dict = {
+            0: [],
+            1: [],
+            2: [], 
+            3: [], 
+            4: [],
+            5: [],
+            6: [],
+            7: [],
+            8: [], 
+            9: [], 
         }
 
-        for i, (id, c) in enumerate(zip(self.ids, self.corners)):
-        
-            # Calculate the area of each contour
-            area = cv2.contourArea(c)
-            areas.append(area)
-            
-            # Find the orientation of each shape
-            angle = self.getOrientation(c)
-            angles.append(angle)
+        for id, contour in zip(self.ids, self.contours):
+            angle = self.getOrientation(id)
+            self.angles.append(angle)
+                                                                                 #         object_height (in mm) * focal_length
+            distance = ARUCO_HEIGHT*FOCAL_LENGTH / (contour[2][1]-contour[0][1]) # dist =  ------------------------------------- 
+            self.id_distance_dict[id[0]] = abs(distance)                              #              object_height (in pixels)
 
-            self.id_2_area[str(id[0])] = area
+        return self.ids, self.contours, self.id_center_dict, self.angles, self.id_distance_dict
 
-        
 
-        return self.ids, self.corners, angles, self.id_2_area, self.id_2_centerPoint
+CAMERA_MATRIX = np.array([[921.170702, 0.000000, 459.904354],
+                          [0.000000, 919.018377, 351.238301],
+                          [0.000000, 0.000000, 1.000000]])
+DISTORTION = np.array([-0.033458, 0.105152, 0.001256, -0.006647, 0.000000])
+
+FOCAL_LENGTH = (CAMERA_MATRIX[0][0] + CAMERA_MATRIX[1][1]) / 2
+
+ARUCO_HEIGHT = 100 # approximately 1/3 of A4's height (in mm) 
 
 ARUCO_DICT = {
             "DICT_4X4_50": cv2.aruco.DICT_4X4_50,
