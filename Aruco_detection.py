@@ -80,7 +80,7 @@ class ArucoDetection:
             if ids is not None:
                 for c, id in zip(contours, ids):
                     self.ids.append(id)
-                    self.contours.append(c[0])
+                    self.contours.append(c[0].astype(int))
 
                     centroid = self.contours[-1].mean(axis=0)
                     centerX = int(np.round(centroid[0]))
@@ -107,9 +107,13 @@ class ArucoDetection:
             self.angles.append(angle)
                                                                                  #         object_height (in mm) * focal_length
             distance = ARUCO_HEIGHT*FOCAL_LENGTH / (contour[2][1]-contour[0][1]) # dist =  ------------------------------------- 
-            self.id_distance_dict[id[0]] = abs(distance)                              #              object_height (in pixels)
+            self.id_distance_dict[id[0]] = abs(distance)                         #              object_height (in pixels)
 
         return self.ids, self.contours, self.id_center_dict, self.angles, self.id_distance_dict
+    
+    def draw_detection(self):
+        cv2.drawContours(self.image, self.contours, -1, (0, 255, 0), 3)
+        return self.image
 
 
 CAMERA_MATRIX = np.array([[921.170702, 0.000000, 459.904354],

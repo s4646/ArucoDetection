@@ -21,13 +21,11 @@ def main():
     f.write("FrameID,QR_ID,QR_leftup,QR_rightup,QR_rightdown,QR_leftdown,Distance,Yaw\n")
     while success:
         success, image = vidcap.read()
-        if success: cv2.imwrite("frames/frame%d.jpg" % count, image)
         detector.set_image_to_process(image)
         detector.detect_aruco()
         ids, corners, centers, angles, distances = detector.get_detection()
 
         print("frame %d" % count)
-        # print(f"ids: {ids}, corners:{corners}, angles: {angles}, areas: {areas}, centers: {centers}")
         if len(ids) > 0:
             for i, id in enumerate(ids):
                 data = get_data(id[0], corners[i], angles[i], distances[id[0]])
@@ -35,6 +33,9 @@ def main():
         else:
             f.write(f"{count},-1,-1:-1,-1:-1,-1:-1,-1:-1,-1,0\n")  
         
+        if success:
+            image = detector.draw_detection()
+            cv2.imwrite("frames/frame%d.jpg" % count, image)
         count += 1
     f.close()
 
