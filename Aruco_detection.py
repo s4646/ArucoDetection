@@ -11,29 +11,19 @@ class ArucoDetection:
         self.contours = []
 
         self.id_center_dict = {
-            0: [],
-            1: [],
-            2: [], 
-            3: [], 
-            4: [],
-            5: [],
-            6: [],
-            7: [],
-            8: [], 
-            9: [], 
+            0: [], 1: [],
+            2: [], 3: [], 
+            4: [], 5: [],
+            6: [], 7: [],
+            8: [], 9: [], 
         }
 
         self.id_distance_dict = {
-            0: [],
-            1: [],
-            2: [], 
-            3: [], 
-            4: [],
-            5: [],
-            6: [],
-            7: [],
-            8: [], 
-            9: [], 
+            0: [], 1: [],
+            2: [], 3: [], 
+            4: [], 5: [],
+            6: [], 7: [],
+            8: [], 9: [], 
         }
 
     def set_image_to_process(self, image):
@@ -62,16 +52,11 @@ class ArucoDetection:
             self.corners = []
             self.ids = []
             self.id_center_dict = {
-                0: [],
-                1: [],
-                2: [], 
-                3: [], 
-                4: [],
-                5: [],
-                6: [],
-                7: [],
-                8: [], 
-                9: [], 
+                0: [], 1: [],
+                2: [], 3: [], 
+                4: [], 5: [],
+                6: [], 7: [],
+                8: [], 9: [], 
             }
 
             arucoParams = cv2.aruco.DetectorParameters()
@@ -90,16 +75,11 @@ class ArucoDetection:
     def get_detection(self):
         self.angles = []
         self.id_distance_dict = {
-            0: [],
-            1: [],
-            2: [], 
-            3: [], 
-            4: [],
-            5: [],
-            6: [],
-            7: [],
-            8: [], 
-            9: [], 
+            0: [], 1: [],
+            2: [], 3: [], 
+            4: [], 5: [],
+            6: [], 7: [],
+            8: [], 9: [], 
         }
 
         for id, contour in zip(self.ids, self.contours):
@@ -113,6 +93,14 @@ class ArucoDetection:
     
     def draw_detection(self):
         cv2.drawContours(self.image, self.contours, -1, (0, 255, 0), 3)
+        
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        fontScale = 0.8
+        for id in self.ids:
+            self.image = cv2.putText(self.image, f"{id[0]}",
+                                     self.id_center_dict[id[0]], font,
+                                     fontScale, (0, 255, 0), 2, cv2.LINE_AA) 
+
         return self.image
 
 
