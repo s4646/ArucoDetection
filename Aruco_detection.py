@@ -19,11 +19,11 @@ class ArucoDetection:
         }
 
         self.id_distance_dict = {
-            0: [], 1: [],
-            2: [], 3: [], 
-            4: [], 5: [],
-            6: [], 7: [],
-            8: [], 9: [], 
+            0: np.inf, 1: np.inf,
+            2: np.inf, 3: np.inf, 
+            4: np.inf, 5: np.inf,
+            6: np.inf, 7: np.inf,
+            8: np.inf, 9: np.inf, 
         }
 
     def set_image_to_process(self, image):
@@ -75,11 +75,11 @@ class ArucoDetection:
     def get_detection(self):
         self.angles = []
         self.id_distance_dict = {
-            0: [], 1: [],
-            2: [], 3: [], 
-            4: [], 5: [],
-            6: [], 7: [],
-            8: [], 9: [], 
+            0: np.inf, 1: np.inf,
+            2: np.inf, 3: np.inf, 
+            4: np.inf, 5: np.inf,
+            6: np.inf, 7: np.inf,
+            8: np.inf, 9: np.inf,
         }
 
         for id, contour in zip(self.ids, self.contours):
@@ -111,7 +111,7 @@ DISTORTION = np.array([-0.033458, 0.105152, 0.001256, -0.006647, 0.000000])
 
 FOCAL_LENGTH = (CAMERA_MATRIX[0][0] + CAMERA_MATRIX[1][1]) / 2
 
-ARUCO_HEIGHT = 100 # approximately 1/3 of A4's height (in mm) 
+ARUCO_HEIGHT = 80 # approximately 1/3 of A4's height (in mm) 
 
 ARUCO_DICT = {
             "DICT_4X4_50": cv2.aruco.DICT_4X4_50,
